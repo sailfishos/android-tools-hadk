@@ -1,0 +1,25 @@
+From e940412cad313b418f68ad1ee32e64a9958a39a7 Mon Sep 17 00:00:00 2001
+From: Matti Kosola <matti.kosola@jolla.com>
+Date: Tue, 30 Apr 2019 10:23:50 +0300
+Subject: [PATCH] Include sys/sysmacros.h
+
+Signed-off-by: Matti Kosola <matti.kosola@jolla.com>
+---
+ adb/usb_linux.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/adb/usb_linux.c b/adb/usb_linux.c
+index f16bdd036..28c5c8eff 100644
+--- a/adb/usb_linux.c
++++ b/adb/usb_linux.c
+@@ -35,6 +35,7 @@
+ #include <linux/usb_ch9.h>
+ #endif
+ #include <asm/byteorder.h>
++#include <sys/sysmacros.h>
+ 
+ #include "sysdeps.h"
+ 
+-- 
+2.20.1
+

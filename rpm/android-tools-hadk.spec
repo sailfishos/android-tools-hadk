@@ -27,8 +27,15 @@ The upstream tarball is based of these upstream Android git repos:
 
 with unneeded files removed.
 
+%package bootimg
+Summary:    Tools for bootimg
+
+%description bootimg
+Tools for bootimg.
+
 %package -n sudo-for-abuild
 Summary:    Install this to allow OBS abuild user to use sudo in build
+Requires:   %{name} = %{version}-%{release}
 Requires:   sudo
 
 %description -n sudo-for-abuild
@@ -51,10 +58,11 @@ make -f %{SOURCE3} -C core/mkbootimg
 rm -rf %{buildroot}
 install -D -m 755  core/adb/adb %{buildroot}%{_bindir}/adb
 install -D -m 755  core/fastboot/fastboot %{buildroot}%{_bindir}/fastboot
-install -D -m 755  core/mkbootimg/mkbootimg %{buildroot}%{_bindir}/mkbootimg
-install -D -m 755  split_bootimg.pl %{buildroot}%{_bindir}/split_bootimg
 install -D -m 755  mer-android-chroot %{buildroot}%{_bindir}/ubu-chroot
 install -D -m 755  mer-ubusdk-bash-setup %{buildroot}%{_datadir}/ubu-chroot/mer-ubusdk-bash-setup
+# For android-tools-hadk-bootimg
+install -D -m 755  core/mkbootimg/mkbootimg %{buildroot}%{_bindir}/mkbootimg
+install -D -m 755  split_bootimg.pl %{buildroot}%{_bindir}/split_bootimg
 # For sudo-for-abuild
 install -D -m 755  sudoers.abuild %{buildroot}%{_sysconfdir}/sudoers.d/abuild
 
@@ -62,10 +70,13 @@ install -D -m 755  sudoers.abuild %{buildroot}%{_sysconfdir}/sudoers.d/abuild
 %defattr(-,root,root,-)
 %{_bindir}/adb
 %{_bindir}/fastboot
-%{_bindir}/split_bootimg
-%{_bindir}/mkbootimg
 %{_bindir}/ubu-chroot
 %{_datadir}/ubu-chroot/*
+
+%files bootimg
+%defattr(-,root,root,-)
+%{_bindir}/split_bootimg
+%{_bindir}/mkbootimg
 
 %files -n sudo-for-abuild
 %defattr(-,root,root,-)

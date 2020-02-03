@@ -3,7 +3,6 @@ Name:       android-tools-hadk
 Summary:    Minimal set of android tools
 Version:    5.1.1_r38
 Release:    1
-Group:      Tools
 License:    Apache 2.0
 Source0:    android-tools-hadk-%{version}.tar.gz
 Source1:    adb.mk
@@ -30,8 +29,6 @@ with unneeded files removed.
 
 %package -n sudo-for-abuild
 Summary:    Install this to allow OBS abuild user to use sudo in build
-Group:      Development
-Requires:   %{name} = %{version}-%{release}
 Requires:   sudo
 
 %description -n sudo-for-abuild

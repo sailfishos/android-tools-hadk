@@ -5,7 +5,6 @@ Version:    5.1.1_r38
 Release:    1
 License:    Apache 2.0
 Source0:    android-tools-hadk-%{version}.tar.gz
-Source1:    adb.mk
 Source2:    fastboot.mk
 Source3:    mkbootimg.mk
 Patch0:     0001-Ignore-selinux.patch
@@ -50,13 +49,11 @@ Allow abuild user to execute sudo in an OBS build root.
 %patch4 -p1 -d core
 
 %build
-make -f %{SOURCE1} -C core/adb
 make -f %{SOURCE2} -C core/fastboot
 make -f %{SOURCE3} -C core/mkbootimg
 
 %install
 rm -rf %{buildroot}
-install -D -m 755  core/adb/adb %{buildroot}%{_bindir}/adb
 install -D -m 755  core/fastboot/fastboot %{buildroot}%{_bindir}/fastboot
 install -D -m 755  mer-android-chroot %{buildroot}%{_bindir}/ubu-chroot
 install -D -m 755  mer-ubusdk-bash-setup %{buildroot}%{_datadir}/ubu-chroot/mer-ubusdk-bash-setup
@@ -68,7 +65,6 @@ install -D -m 755  sudoers.abuild %{buildroot}%{_sysconfdir}/sudoers.d/abuild
 
 %files
 %defattr(-,root,root,-)
-%{_bindir}/adb
 %{_bindir}/fastboot
 %{_bindir}/ubu-chroot
 %{_datadir}/ubu-chroot/*

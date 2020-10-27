@@ -14,8 +14,7 @@ Patch3:     0001-mkbootimg-add-dt-parameter.patch
 Patch4:     0001-Include-sys-sysmacros.h.patch
 
 BuildRequires:  pkgconfig(openssl)
-BuildRequires:  python
-BuildRequires:  zlib
+BuildRequires:  pkgconfig(zlib)
 
 %description
 android-tools for HADK

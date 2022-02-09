@@ -245,7 +245,12 @@ prepare_user() {
 	inform "mount --rbind ${proot}${HOMEDIR} ${uburoot}${HOMEDIR}"
 	mount --rbind ${proot}${HOMEDIR} ${uburoot}${HOMEDIR}
     fi
-    echo "$user ALL=NOPASSWD: ALL" > ${uburoot}/etc/sudoers.d/$user
+    cat > ${uburoot}/etc/sudoers.d/$user <<EOF
+$user ALL=NOPASSWD: ALL
+# With newer sudo versions we need to disable pam_acct_mgmt since it
+# does't work for our use case and there's no use for it in the ubuntu-chroot.
+Defaults !pam_acct_mgmt
+EOF
     chmod 0440 ${uburoot}/etc/sudoers.d/$user
 }
 

@@ -71,7 +71,8 @@ fi
 
 if cmp -s /proc/$PPID/mountinfo /proc/self/mountinfo; then
     # Propagation switch was introduced by util-linux-2.27, let's check here:
-    unshare --help | fgrep -q -- --propagation && UNSHARE_EXTRA_OPT="--propagation unchanged"
+    unshare --help | grep -F -q \
+                          -- --propagation && UNSHARE_EXTRA_OPT="--propagation unchanged"
     # Leave the propagation unchanged when launched within SDK, otherwise an
     # attempt to alter it (even default behaviour) results in "Invalid argument"
     exec unshare $UNSHARE_EXTRA_OPT -m -- "$0" "$@"

@@ -298,23 +298,33 @@ do_it_all() {
     run_user_hook mount_sdk
     run_user_hook enter_sdk
 
-    case "$#" in
-	0 )
-	    if grep --quiet \
-		    --invert-match \
-		    --word-regexp "wheezy\|jessie\|bullseye\|sid" \
-		    "${uburoot}"/etc/debian_version ; then
-		# This is for ubuntu 12.04+ (arg quoting for sudo is different)
-		echo Unknown ubuntu version >&2
-		exit 1
-	    fi
-	    setarch x86_64 chroot ${uburoot} /usr/bin/sudo -i -u $user exec bash -i -c "export MERSDKUBU=1; if [ -d \"$cwd\" ]; then cd \"$cwd\"; fi; exec bash --init-file /parentroot/usr/share/ubu-chroot/mer-ubusdk-bash-setup"
-	    ;;
-	* )
-	    setarch x86_64 chroot ${uburoot} /usr/bin/sudo -i -u $user exec bash -i -c "export MERSDKUBU=1; if [ -d \"$cwd\" ]; then cd \"$cwd\"; fi; exec bash --init-file /parentroot/usr/share/ubu-chroot/mer-ubusdk-bash-setup -c '$*'"
-	    retval=$?
-	    ;;
-    esac
+
+
+    if grep --quiet \
+	    --invert-match \
+	    --word-regexp "wheezy\|jessie\|bullseye\|sid" \
+	    "${uburoot}"/etc/debian_version ; then
+	# This is for ubuntu 12.04+ (arg quoting for sudo is different)
+	echo Unknown ubuntu version >&2
+	exit 1
+    fi
+    if [ $# -eq 0 ] ; then
+        set -- /usr/bin/env \
+            bash --init-file \
+            /parentroot/usr/share/ubu-chroot/mer-ubusdk-bash-setup -i
+    fi
+
+    setarch x86_64 chroot "${uburoot}" \
+            /usr/bin/env su --shell=/bin/bash --login $user -- \
+            -c "$(cat <<EOF
+[ -d "$cwd" ] && cd "$cwd"
+export MERSDKUBU=1
+
+exec $(printf -- "%q " "${@}")
+EOF
+)"
+    retval="$?"
+
     inform exited
     run_user_hook leave_sdk
     umount_spare

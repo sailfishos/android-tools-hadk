@@ -235,6 +235,8 @@ prepare_user() {
     sed -i -e "/^[^:]*:[^:]*:${group}:/d" ${uburoot}/etc/group
     getent group $group >> ${uburoot}/etc/group
     HOMEDIR=$(getent passwd $user | cut -f6 -d:)
+    # sync passwd and shadow
+    pwconv --root ${uburoot}
 
     if [[ $bind_mount_home == "yes" ]] ; then
 	inform "Mounting home directory: ${HOMEDIR}"

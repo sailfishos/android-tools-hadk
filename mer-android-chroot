@@ -238,9 +238,10 @@ prepare_user() {
     # sync passwd and shadow
     pwconv --root ${uburoot}
 
+    install --owner $user --group $(id -gn $user) -d ${uburoot}${HOMEDIR}
+
     if [[ $bind_mount_home == "yes" ]] ; then
 	inform "Mounting home directory: ${HOMEDIR}"
-	mkdir -p ${uburoot}${HOMEDIR}
 	# For some reason, inside an SDK, we can't remount a bound $HOME
 	local proot=""
 	{ [[ -h /parentroot ]] || ! [[ -e /parentroot ]]; } || proot=/parentroot

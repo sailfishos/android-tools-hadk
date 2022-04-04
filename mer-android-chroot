@@ -318,7 +318,7 @@ do_it_all() {
     fi
 
     setarch x86_64 chroot "${uburoot}" \
-            /usr/bin/env su --shell=/bin/bash --login $user -- \
+            /usr/bin/env su --pty --shell=/bin/bash --login $user -- \
             -c "$(cat <<EOF
 [ -d "$cwd" ] && cd "$cwd"
 export MERSDKUBU=1

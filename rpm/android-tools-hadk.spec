@@ -54,7 +54,8 @@ make -f %{SOURCE3} -C core/mkbootimg
 %install
 rm -rf %{buildroot}
 install -D -m 755  core/fastboot/fastboot %{buildroot}%{_bindir}/fastboot
-install -D -m 755  mer-android-chroot %{buildroot}%{_bindir}/ubu-chroot
+sed -e 's/@VERSION@/%{version}/' mer-android-chroot > %{buildroot}%{_bindir}/ubu-chroot
+chmod 755 %{buildroot}%{_bindir}/ubu-chroot
 install -D -m 755  mer-ubusdk-bash-setup %{buildroot}%{_datadir}/ubu-chroot/mer-ubusdk-bash-setup
 # For android-tools-hadk-bootimg
 install -D -m 755  core/mkbootimg/mkbootimg %{buildroot}%{_bindir}/mkbootimg

@@ -28,6 +28,7 @@ usage()
        -r  The root of the SDK to use - normally derived from the
            pathname of $0
        -v  Be verbose about what's happening
+       -V  Print version
        -h  Show this help
 
       Profile
@@ -88,7 +89,9 @@ bind_mount_home="yes";
 
 QUIET=yes
 
-while getopts "u:m:r:vh" opt; do
+version=@VERSION@
+
+while getopts "u:m:r:vhV" opt; do
     case $opt in
 	u ) user=$OPTARG;;
 	m )
@@ -106,9 +109,11 @@ while getopts "u:m:r:vh" opt; do
 		    exit 1;;
 	    esac ;;
 	r ) uburoot=$OPTARG;;
+        c ) command=t;;
 	h|\? ) usage
             exit 1;;
 	v ) QUIET= ;;
+        V ) echo $version; exit 0 ;;
 	: ) echo "Option -$OPTARG requires an argument." >&2
 	    usage
 	    exit 1;;

@@ -320,6 +320,10 @@ do_it_all() {
         set -- /usr/bin/env \
             bash --init-file \
             /parentroot/usr/share/ubu-chroot/mer-ubusdk-bash-setup -i
+    else
+        cat >&2 <<EOF
+Warning: If you want to pass multiple shell commands use sh -c
+EOF
     fi
 
     pty=

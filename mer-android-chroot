@@ -28,6 +28,7 @@ usage()
        -r  The root of the SDK to use - normally derived from the
            pathname of $0
        -v  Be verbose about what's happening
+       -V  Print version
        -h  Show this help
 
       Profile
@@ -88,7 +89,9 @@ bind_mount_home="yes";
 
 QUIET=yes
 
-while getopts "u:m:r:vh" opt; do
+version=@VERSION@
+
+while getopts "u:m:r:vhV" opt; do
     case $opt in
 	u ) user=$OPTARG;;
 	m )
@@ -106,9 +109,11 @@ while getopts "u:m:r:vh" opt; do
 		    exit 1;;
 	    esac ;;
 	r ) uburoot=$OPTARG;;
+        c ) command=t;;
 	h|\? ) usage
             exit 1;;
 	v ) QUIET= ;;
+        V ) echo $version; exit 0 ;;
 	: ) echo "Option -$OPTARG requires an argument." >&2
 	    usage
 	    exit 1;;
@@ -235,10 +240,13 @@ prepare_user() {
     sed -i -e "/^[^:]*:[^:]*:${group}:/d" ${uburoot}/etc/group
     getent group $group >> ${uburoot}/etc/group
     HOMEDIR=$(getent passwd $user | cut -f6 -d:)
+    # sync passwd and shadow
+    pwconv --root ${uburoot}
+
+    install --owner $user --group $(id -gn $user) -d ${uburoot}${HOMEDIR}
 
     if [[ $bind_mount_home == "yes" ]] ; then
 	inform "Mounting home directory: ${HOMEDIR}"
-	mkdir -p ${uburoot}${HOMEDIR}
 	# For some reason, inside an SDK, we can't remount a bound $HOME
 	local proot=""
 	{ [[ -h /parentroot ]] || ! [[ -e /parentroot ]]; } || proot=/parentroot
@@ -298,40 +306,42 @@ do_it_all() {
     run_user_hook mount_sdk
     run_user_hook enter_sdk
 
-    case "$#" in
-	0 )
-	    inform "Entering chroot as $user"
-	    if grep -q squeeze ${uburoot}/etc/debian_version; then
-		# For older 10.04
-		setarch x86_64 chroot ${uburoot} /usr/bin/sudo -i -u $user "export MERSDKUBU=1; if [ -d \"$cwd\" ]; then cd \"$cwd\"; fi; exec bash --init-file /parentroot/usr/share/ubu-chroot/mer-ubusdk-bash-setup -i";
-	    elif grep -w "wheezy\|jessie\|bullseye\|sid" ${uburoot}/etc/debian_version > /dev/null; then
-		# This is for ubuntu 12.04+ (arg quoting for sudo is different)
-		setarch x86_64 chroot ${uburoot} /usr/bin/sudo -i -u $user exec bash -i -c "export MERSDKUBU=1; if [ -d \"$cwd\" ]; then cd \"$cwd\"; fi; exec bash --init-file /parentroot/usr/share/ubu-chroot/mer-ubusdk-bash-setup"
-	    else
-		echo Unknown ubuntu version
-		exit 1
-	    fi
-	    ;;
-	* )
-	    if [[ $1 == 'exec' ]]; then
-		cat <<EOF
-WARN: sdk 'exec' is deprecated. Just execute SDK commands using:
-  $0 <cmd> <args>
-  
-Executing commands as requested
+
+
+    if grep --quiet \
+	    --invert-match \
+	    --word-regexp "wheezy\|jessie\|bullseye\|sid" \
+	    "${uburoot}"/etc/debian_version ; then
+	# This is for ubuntu 12.04+ (arg quoting for sudo is different)
+	echo Unknown ubuntu version >&2
+	exit 1
+    fi
+    if [ $# -eq 0 ] ; then
+        set -- /usr/bin/env \
+            bash --init-file \
+            /parentroot/usr/share/ubu-chroot/mer-ubusdk-bash-setup -i
+    else
+        cat >&2 <<EOF
+Warning: If you want to pass multiple shell commands use sh -c
 EOF
-		shift # Remove the offending 'exec'
-	    fi
-	    if [[ ! $1 ]]; then
-		echo "You must supply a command to exec"
-		usage
-		retval=1
-	    else
-		setarch x86_64 chroot ${uburoot} /usr/bin/sudo -i -u $user exec bash -i -c "export MERSDKUBU=1; if [ -d \"$cwd\" ]; then cd \"$cwd\"; fi; exec bash --init-file /parentroot/usr/share/ubu-chroot/mer-ubusdk-bash-setup -c '$*'"
-		retval=$?
-	    fi
-	    ;;
-    esac
+    fi
+
+    pty=
+    if setarch x86_64 chroot "${uburoot}" /bin/su -h |grep -q -- --pty ; then
+       pty=--pty
+    fi
+
+    setarch x86_64 chroot "${uburoot}" \
+            /usr/bin/env su ${pty} --shell=/bin/bash --login $user -- \
+            -c "$(cat <<EOF
+[ -d "$cwd" ] && cd "$cwd"
+export MERSDKUBU=1
+
+exec $(printf -- "%q " "${@}")
+EOF
+)"
+    retval="$?"
+
     inform exited
     run_user_hook leave_sdk
     umount_spare

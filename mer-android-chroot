@@ -216,8 +216,8 @@ prepare_mountpoints() {
 	mount --rbind / ${uburoot}/parentroot/
     fi
 
-    mkdir -p ${uburoot}/lib/modules/`uname -r`
-    mount_bind /lib/modules/`uname -r`
+    mkdir -p ${uburoot}/lib/modules/$(uname -r)
+    mount_bind /lib/modules/$(uname -r)
 
 }
 umount_spare() {
@@ -226,6 +226,15 @@ umount_spare() {
     umount ${uburoot}/dev/pts || :
     umount ${uburoot}/dev/shm ${uburoot}/run/shm || :
     umount ${uburoot}/var/run/dbus || :
+    umount ${uburoot}/sys || :
+    umount ${uburoot}/dev || :
+    umount ${uburoot}/proc || :
+
+    if [[ $bind_mount_home == yes ]] ; then
+        if mountpoint -q ${uburoot}/$HOMEDIR ; then
+            umount ${uburoot}/$HOMEDIR
+        fi
+    fi
 }
 
 prepare_user() {

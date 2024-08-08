@@ -267,6 +267,8 @@ $user ALL=NOPASSWD: ALL
 # With newer sudo versions we need to disable pam_acct_mgmt since it
 # does't work for our use case and there's no use for it in the ubuntu-chroot.
 Defaults !pam_acct_mgmt
+# Don't bother trying to resolve the hostname
+Defaults !fqdn
 EOF
     chmod 0440 ${uburoot}/etc/sudoers.d/$user
 }
